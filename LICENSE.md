@@ -4,6 +4,8 @@ Copyright (c) 2017 Fredrik Stromberg
 
 All data in this repository is made available under Open Database License whose full text can be found at http://opendatacommons.org/licenses/odbl/. Any rights in individual contents of the database are licensed under the Database Contents License whose text can be found http://opendatacommons.org/licenses/dbcl/
 
+
+
 All other files (i.e. everything which is not clearly data and thus covered by the above) are free software:
     you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

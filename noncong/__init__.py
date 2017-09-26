@@ -8,7 +8,7 @@ Author: Fredrik Stromberg
 from flask import Flask
 from extensions import mongoeng
 import subgroups
-
+import noncong.backend.print_table
 
 def create_app():
     app = Flask(__name__)

@@ -79,7 +79,12 @@ def sage_subgroup_to_db(G,update=True,**kwds):
     return G                
             
 def psage_subgroup_to_db(G,update=True,**kwds):
+    r"""
+    Convert a subgroup of type MySubgroup to the database format in a canonical way.
+    """
+
     d = kwds
+    G.relabel() ## make the permutations canonical
     d['index'] = G.index()
     d['permS'] = str(G.permS.list()).replace(" ","")
     d['permR'] = str(G.permR.list()).replace(" ","")

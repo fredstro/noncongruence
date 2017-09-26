@@ -84,7 +84,7 @@ class Subgroup(db.Document):
     cusp_representatives = db.StringField()
 
     ## The group congruence cover (self) / self =~ <permS,permR> =~ Image(mod N)?
-    quotient_group = db.StringField()
+    permutation_group = db.StringField()
 
     generalized_level = db.IntField()
 
@@ -127,7 +127,11 @@ class Subgroup(db.Document):
             s = "Subgroup of PS(2,Z) of signature {0} ".format(self.signature)
             s+= " with perm(T)= {0} ".format(string_of_list_to_cycles(self.permT))
             self.latex_name = s
-        self.congruence = self._to_sage().is_congruence()
+        if self.congruence is None:
+            try:
+                self.congruence = self._to_sage().is_congruence()
+            except ImportError:
+                pass
         self.generalized_level = self.get_generalized_level()
         super(Subgroup,self).save(**kwds)
     
@@ -180,6 +184,25 @@ class Subgroup(db.Document):
         if self.congruence is None:
             self.congruence = self._to_sage().is_congruence()
         return self.congruence
+
+    def _get_canonical_labels(self):
+        try:
+            from psage.all import MySubgroup
+        except ImportError as e:
+            raise e
+        G = self._to_psage()
+        mapping = G._canonical_rooted_labels()
+        s = [None]*G.index()
+        r = [None]*G.index()
+        t = [None]*G.index()
+        for  i in range(G.index()):
+            s[ mapping[i]] = mapping[G.permS(i+1)-1]+1 
+            r[ mapping[i]] = mapping[G.permR(i+1)-1]+1 
+            t[ mapping[i]] = mapping[G.permT(i+1)-1]+1 
+        s = str(s).replace(" ","")
+        r = str(r).replace(" ","")
+        t = str(t).replace(" ","")
+        return s,r,t
     
 class ConjugacyClassPSL(db.Document):
     representative = db.ReferenceField(Subgroup,required=True,unique=True)

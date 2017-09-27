@@ -2,8 +2,12 @@
 
 This repository contains Examples, code and Data for the paper "Noncongruence Subgroups and Maass waveforms" 
 
-You can make basic queries etc. against the database without having Sage installed but certain
-extra features will only be available through Sage.
+You can make basic queries etc. against the database of subgroups without having SAGE (http://www.sagemath.org) or PSAGE  (https://github.com/fredstro/psage) installed but certain extra features will only be available through PSAGE.
+
+Examples of Maass forms and eigenvalues are available in the `/examples` directory:
+
+* `examples/examples_eigenvalue_tables.py` -- data corresponding to Tables of non-exceptional eigenvalues
+* `examples/examples_exceptional.py`   -- data for Tables of exceptional eigenvalues.
 
 
 
@@ -50,7 +54,24 @@ In [1]: import noncong
 
 In [2]: noncong.subgroups.models.Subgroup.objects.filter(genus=0,index=10).count()
 255
+
 In [3]: g=noncong.subgroups.models.Subgroup.objects.filter(index=10).first();g
+
 Out[4]: Subgroup of PS(2,Z) of signature (10;0,2,2,1)  with perm(T)= ((1, 2, 5, 4, 3, 7, 9, 8, 6), (10,))
+
 In [5]: g.generators
+
 Out[6]: u'[[0, -1, 1, 0], [4, -1, 9, -2], [-4, 3, -7, 5], [1, -2, 1, -1]]'
+
+
+# Print tables #:
+>ipython
+In[1]: import noncong.subgroups.models
+In[2]: fp=open('table.html','w')
+In[3]: s=noncong.backend.print_table.print_table_of_groups(index_max=17,format='html')
+In[4]: fp.writelines(s)
+In[5]: fp.close()
+In[2]: fp=open('table.tex','w')
+In[3]: s=noncong.backend.print_table.print_table_of_groups(index_max=17,format='latex')
+In[4]: fp.writelines(s)
+In[5]: fp.close()

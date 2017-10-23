@@ -98,7 +98,8 @@ class Subgroup(db.Document):
             {'fields':('ncusps',),'unique':False},                        
             {'fields':('permS','permR'),'unique':True},
             {'fields':('generators',),'unique':True},
-        ]
+        ],
+        'strict': False
     }
 
     def save(self,**kwds):

@@ -31,7 +31,6 @@ class ExtendedDecoder(json.JSONDecoder):
         json.JSONDecoder.__init__(self, object_hook=self.dict_to_object)
 
     def dict_to_object(self, d):
-        print "d=",d
         if d.get('__type__')=='cplx':
             return complex(d['re'],d['im'])
         else:

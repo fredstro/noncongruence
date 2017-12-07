@@ -204,6 +204,9 @@ class Subgroup(db.Document):
         r = str(r).replace(" ","")
         t = str(t).replace(" ","")
         return s,r,t
+
+    def conjugacy_class(self):
+        return ConjugacyClassPSL.objects.filter(elements=self).first()
     
 class ConjugacyClassPSL(db.Document):
     representative = db.ReferenceField(Subgroup,required=True,unique=True)
@@ -224,12 +227,29 @@ class ConjugacyClassPSL(db.Document):
         
     def find_reflected_class(self):
         reflected = self
+        try:
+            from psage.all import MySubgroup
+        except ImportError as e:
+            raise e
         for c in ConjugacyClassPSL.objects.filter(signature=self.signature):
             if c == self:
                 continue
-            if self.representative in c.elements:
-                reflected = c
-                break
+            ## We need to identify groups which we can only do using Psage (or Sage)
+            reflected_rep = self.representative._to_psage().reflected_group()
+            reflected_rep.relabel()
+            d = {}
+            d['permR'] = str(reflected_rep.permR.list()).replace(" ","")
+            d['permS'] = str(reflected_rep.permS.list()).replace(" ","")
+            g = Subgroup.objects.filter(permS=d['permS']).filter(permR=d['permR']).first()
+            if g is None: ## In case we haven't the normalized groups in the database...
+               if reflected_rep in map(lambda x:x._to_psage(),c.elements):
+                   reflected = c
+                   break
+            else:
+                if g in c.elements:
+                    #if self.representative in c.elements:
+                    reflected = c
+                    break
         return reflected
     def length(self):
         return len(self.elements)

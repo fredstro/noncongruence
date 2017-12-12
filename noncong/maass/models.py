@@ -41,3 +41,10 @@ class ScatteringDeterminant(db.Document):
     value = ComplexNumberField()
     
     
+class MaassEigenvalue(db.Document):
+    r"""
+    Class to represent Maass form eigenvalues
+    """
+    group = db.ReferenceField(Subgroup,required=True)
+    R = db.FloatField(required=True)
+    

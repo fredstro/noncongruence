@@ -48,3 +48,6 @@ class MaassEigenvalue(db.Document):
     group = db.ReferenceField(Subgroup,required=True)
     R = db.FloatField(required=True)
     err=db.FloatField()
+    Y=db.FloatField()
+    M=db.IntField()
+    

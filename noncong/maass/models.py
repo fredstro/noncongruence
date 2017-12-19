@@ -51,3 +51,21 @@ class MaassEigenvalue(db.Document):
     Y=db.FloatField()
     M=db.IntField()
     
+class DeltaArgument(db.Document):
+    r"""
+    Class containing spline points which represent the function M(T)=DeltaArg phi(1/2+it)
+    Requires: Sage
+    """
+    group = db.ReferenceField(Subgroup,required=True)
+    pts = db.BinaryField() ## json string
+    maxT=db.FloatField()
+    def save(self,**kwds):
+        from sage.all import dumps
+        if isinstance(self.pts,list):
+            self.pts = dumps(self.pts)
+        super(DeltaArg,self).save(**kwds)
+    def spline(self):
+        from sage.all import Spline,loads
+        return Spline(loads(self.pts))
+
+    

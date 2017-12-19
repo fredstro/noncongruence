@@ -51,7 +51,7 @@ class MaassEigenvalue(db.Document):
     Y=db.FloatField()
     M=db.IntField()
     
-class DeltaArgument(db.Document):
+class DeltaArg(db.Document):
     r"""
     Class containing spline points which represent the function M(T)=DeltaArg phi(1/2+it)
     Requires: Sage

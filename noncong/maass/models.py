@@ -50,6 +50,7 @@ class MaassEigenvalue(db.Document):
     err=db.FloatField()
     Y=db.FloatField()
     M=db.IntField()
+    dim=db.IntField()
     C2=ComplexNumberField() # C(2)  mainly here to help detect multiple eigenvalues.
     Cm1=ComplexNumberField()# C(-1) and to estimate errors
     
@@ -61,11 +62,23 @@ class DeltaArg(db.Document):
     group = db.ReferenceField(Subgroup,required=True)
     pts = db.BinaryField() ## json string
     maxT=db.FloatField()
+    meta = {
+          'indexes': [
+            {'fields': ('group',), 'unique': True}
+        ]
+    }
     def save(self,**kwds):
         from sage.all import dumps
+        ## 
         if isinstance(self.pts,list):
+            self.maxT=max(self.pts)[0]
+            ## We can't make a Spline if we have duplicate x-coords
+            d = dict(self.pts)
+            self.pts = zip(d.keys(),d.values())
             self.pts = dumps(self.pts)
+            
         super(DeltaArg,self).save(**kwds)
+        
     def spline(self):
         from sage.all import Spline,loads
         return Spline(loads(self.pts))

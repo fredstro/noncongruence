@@ -53,6 +53,7 @@ class MaassEigenvalue(db.Document):
     dim=db.IntField()
     C2=ComplexNumberField() # C(2)  mainly here to help detect multiple eigenvalues.
     Cm1=ComplexNumberField()# C(-1) and to estimate errors
+    new=db.BooleanField()
     
 class DeltaArg(db.Document):
     r"""

@@ -32,7 +32,7 @@ class ScatteringDeterminant(db.Document):
     """
     meta = {
         'indexes' : [
-            {'fields':('group','t'),'unique':True}
+            {'fields':('group','t','sigma'),'unique':True}
             ]
     }
     group = db.ReferenceField(Subgroup,required=True)
@@ -45,6 +45,12 @@ class MaassEigenvalue(db.Document):
     r"""
     Class to represent Maass form eigenvalues
     """
+    meta = {
+          'indexes': [
+            {'fields': ('group','R'), 'unique': True},
+            {'fields': ('R',), 'unique': False},
+        ]
+    }
     group = db.ReferenceField(Subgroup,required=True)
     R = db.FloatField(required=True)
     err=db.FloatField()

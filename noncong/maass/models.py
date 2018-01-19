@@ -17,13 +17,12 @@ log = logging.getLogger(__name__)
 
 class ComplexNumberField(BaseField):
     def to_python(self,value):
-        if not isinstance(value,dict):
+        if isinstance(value,basestring):
             return json.loads(value,cls=ExtendedDecoder)
         else:
             return value
     def to_mongo(self, value):
         return json.dumps(value,cls=ExtendedEncoder)
-
 
 class ScatteringDeterminant(db.Document):
     r"""
@@ -40,14 +39,8 @@ class ScatteringDeterminant(db.Document):
     t = db.FloatField()
     value = ComplexNumberField()
     is_zero=db.BooleanField()  ## Set to true to indicate that this is one of the located zeros 
-    def save(self,**kwds):
-        self.sigma = float(self.sigma)
-        self.t  = float(self.t)
-        if isinstance(self.value,complex):
-            self.value = {'re':self.value.real,'im':self.value.imag,'__type__':'cplx'}
-        elif hasattr(self.value,real):
-            self.value = {'re':self.value.real(),'im':self.value.imag(),'__type__':'cplx'}
 
+        
 class MaassEigenvalue(db.Document):
     r"""
     Class to represent Maass form eigenvalues

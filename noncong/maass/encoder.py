@@ -23,6 +23,8 @@ class ExtendedEncoder(json.JSONEncoder):
             return datetime.strftime(obj,"%Y-%m-%d %T")
         if isinstance(obj,complex):
             return {"__type__":"cplx","re":obj.real,"im":obj.imag}
+        elif hasattr(obj,'real'):
+            return {"re":float(obj.real()),"im":float(obj.imag()),"__type__":"cplx"}
         return json.JSONEncoder.default(self, obj)
 
     

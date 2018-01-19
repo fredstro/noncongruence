@@ -39,7 +39,7 @@ class ScatteringDeterminant(db.Document):
     sigma = db.FloatField()
     t = db.FloatField()
     value = ComplexNumberField()
-    
+    is_zero=db.BooleanField()  ## Set to true to indicate that this is one of the located zeros 
     
 class MaassEigenvalue(db.Document):
     r"""

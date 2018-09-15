@@ -209,6 +209,9 @@ class Subgroup(db.Document):
         return ConjugacyClassPSL.objects.filter(elements=self).first()
     
 class ConjugacyClassPSL(db.Document):
+    """
+    A conjugacy class of subgroups of PSL(2,Z)
+    """
     representative = db.ReferenceField(Subgroup,required=True,unique=True)
     reflected_class = db.ReferenceField('self')
     elements = db.ListField(db.ReferenceField(Subgroup))
@@ -256,7 +259,21 @@ class ConjugacyClassPSL(db.Document):
     def __unicode__(self):
         s = u"PSL2Z conjugacy class of {0} groups with signature {1}".format(self.length(),self.signature)
         return s
-    
+
+class OldFormMap(db.Document):
+    """
+    Elements A in PGL(2,Z) that maps modular forms on a group G1 to forms on a subgroup G2
+    In other words, A G2 A^{-1} \leqslant G1
+    The map, A, is given as a string of the form [a,b,c,d] and satisfy
+
+    """
+    supergroup = db.ReferenceField(Subgroup)
+    subgroup = db.ReferenceField(Subgroup)
+    map = db.StringField()
+
+    def __unicode__(self):
+        return "{0}: {1} --> {2}".format(self.map,self.supergroup,self.surgroup)
+
 # class ConjugacyClassPGL(db.Document):
 #     representative = db.ReferenceField(Subgroup,required=True,unique=True)
 #     reflected_class = db.ReferenceField('self')

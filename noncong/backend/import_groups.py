@@ -7,7 +7,6 @@ Routines to import subgroups into the database.
 """
 
 from ..subgroups.models import Signature,Subgroup,ConjugacyClassPSL
-#,ConjugacyClassPGL
 
 import mongoengine
 def signature_from_G(G):
@@ -100,15 +99,19 @@ def psage_subgroup_to_db(G,update=True,**kwds):
 
     
     d['congruence'] = G.is_congruence()
-    d['symmetric']  = G.is_symmetric()
+    # We need to check if
+    # a) G has a symmetry
+    # b) if this symmetry preserve cusp classes
+    d['symmetric']  = False
     if G.is_symmetric():
         tmp = {}
-        G.has_modular_correspondence()
-        for t in G._modular_correspondences:
-            val = G._modular_correspondences[t]
-            if val != []:
-                tmp[t] = val
-        d['reflection_info'] = str(tmp)
+        if G.has_modular_correspondence():
+            for t in G._modular_correspondences:
+                val = G._modular_correspondences[t]
+                if val != []:
+                    tmp[t] = val
+            d['reflection_info'] = str(tmp)
+            d['symmetric'] = True
     s = []
     for c in G.cusps():
         s.append( [c.numerator(),c.denominator()])

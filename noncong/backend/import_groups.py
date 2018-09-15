@@ -7,8 +7,10 @@ Routines to import subgroups into the database.
 """
 
 from ..subgroups.models import Signature,Subgroup,ConjugacyClassPSL
-
+import logging
 import mongoengine
+log = logging.getLogger(__name__)
+
 def signature_from_G(G):
     r"""
     The .signature() method of the MySubgroup instance G contains
@@ -90,9 +92,20 @@ def psage_subgroup_to_db(G,update=True,**kwds):
     d['permT'] = str(G.permT.list()).replace(" ","")
     if not update:
         obj =  Subgroup.objects.filter(permS=d['permS']).filter(permR=d['permR']).first()
-        if not obj is None:
+        if obj is not None:
             return obj
-
+        # Else do a more complicated search...
+        for g in Subgroup.objects.filter(index=G.index(),permS=d['permS']):
+            gg = g._to_psage()
+            # check if the group is identical by a falll-back algorithm,
+            equal = True
+            for A in g.gens():
+                if A not in G:
+                    equal = False
+                    break
+            if equal:
+                return g
+        log.warning("Could not find this group in the database!")
     d['signature'] = signature_from_G(G)
     d['coset_representatives'] = str(G.coset_reps())
     d['generators'] = str(G.generators_as_slz_elts())

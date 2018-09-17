@@ -9,44 +9,136 @@ Routines to import subgroups into the database.
 from ..subgroups.models import Signature,Subgroup,ConjugacyClassPSL
 import logging
 import mongoengine
+from mongoengine.errors import NotUniqueError
 log = logging.getLogger(__name__)
+SAGE_AVAILABLE = True
+PSAGE_AVAILABLE = True
 
-def signature_from_G(G):
+try:
+    import sage
+    from sage.all import Gamma0, Gamma, Gamma1
+except ImportError:
+    log.info("Can not import sage. No sage functionality available.")
+    SAGE_AVAILABLE = False
+try:
+    import psage
+    from psage.modform.arithgroup.mysubgroup import MySubgroup_class
+except ImportError:
+    log.info("Can not import sage. No sage functionality available.")
+    PSAGE_AVAILABLE = False
+
+
+
+def signature_from_group(G):
     r"""
     The .signature() method of the MySubgroup instance G contains
     (index,h,nu2,nu3,g)
     """
+    if isinstance(G,Subgroup):
+        return G.signature
+    if not SAGE_AVAILABLE:
+        raise ValueError,"Can not calculate signature of a sage group without sage installed!"
     s = dict(index=G.index(),ncusps=G.ncusps(),genus=G.genus(),
         e2=G.nu2(),e3=G.nu3())
     sig = Signature.objects.filter(**s).first()
-    if not sig is None:
+    if sig is not None:
         return sig
     sig = Signature(**s)
     sig.save()
     return sig
 
+def subgroup_to_db(G,update=True,insert=True,**kwds):
+    r"""
+    Get an element of the subgroup database corresponding to a  subgroup given  Sage or Psage.
+    :param G:
+    :param update:
+    :param kwds:
+    :return:
+    """
+    if isinstance(G,Subgroup):
+        return Subgroup.objects.filter(id=G.id)
+    if not SAGE_AVAILABLE:
+        raise ValueError, "Can not convert a sage group without sage installed!"
+    signature = signature_from_group(G)
+    # Check if a subgroup
+    if not hasattr(G,'as_permutation_group'):
+        raise ValueError,"Can not convert object of type {0} to Subgroup".format(type(G))
+    if not hasattr(G, 'permutation_action'):
+        G = G.as_permutation_group()
+    G.relabel()
+    tS = G.permutation_action([0, -1, 1, 0])
+    permS = str([tS(i) for i in range(1,G.index()+1)]).replace(' ','')
+    tR = G.permutation_action([0, -1, 1, 1])  ## R = ST
+    permR = str([tR(i) for i in range(1, G.index() + 1)]).replace(' ', '')
+    tT = G.permutation_action([1, 1, 0, 1])
+    permT = str([tT(i) for i in range(1, G.index() + 1)])
+    # First do a direct search
+    res = Subgroup.objects.filter(permS=permS,permR=permR).first()
+    if res is not None:
+        return res
+    # else do a more through search and compare with groups of the same signature
+    for group in Subgroup.objects.filter(signature=signature):
+        try:
+            for gen in group.gens():
+                if gen not in G:
+                    raise StopIteration
+            # If here then group is a subgroup of G and since the index is the same they must be equal
+            return group
+        except StopIteration:
+            pass
+    # If we didn't find the group in the database we need to insert it if insert=True
+    if not insert:
+        return None
+    return insert_subgroup(G,update,**kwds)
+
+
+
+def insert_subgroup(G,update=True,**kwds):
+    """
+    insert a subgroup into the datbase.
+    :param G:
+    :param update:
+    :param kwds:
+    :return:
+    """
+    if isinstance(G,MySubgroup_class):
+        d = psage_subgroup_to_db(G,**kwds)
+    else:
+        d = sage_subgroup_to_db(G,**kwds)
+
+    G = Subgroup(**d)
+    try:
+        G.save()
+    except NotUniqueError as e:
+        G = Subgroup.objects(permS=d['permS'], permR=d['permR']).first()
+        if update:
+            if G is not None:
+                G.update(**d)
+    return G
+
 def sage_subgroup_to_db(G,update=True,**kwds):
     r"""
-    A simple class which just represents a sage group in a way that we can convert 
+    Get data for a database subgroup from a sage subgroup.
     """
-    from sage.all import Gamma0,Gamma,Gamma1
     d = {}
-    GP = G.as_permutation_group()
-    tS = GP.permutation_action([0,-1,1,0])
+    cusps = G.cusps()
+    if not hasattr(G,'permutation_action'):
+        G = G.as_permutation_group()
+    tS = G.permutation_action([0,-1,1,0])
     d['permS'] = str([tS(i) for i in range(1,G.index()+1)]).replace(' ','')
-    tR = GP.permutation_action([0,-1,1,1])  ## R = ST
+    tR = G.permutation_action([0,-1,1,1])  ## R = ST
     d['permR'] = str([tR(i) for i in range(1,G.index()+1)]).replace(' ','')
     if not update:
-        obj =  Subgroup.objects.filter(permS=d['permS']).filter(permR=d['permR']).first()
-        if not obj is None:
+        obj = Subgroup.objects.filter(permS=d['permS']).filter(permR=d['permR']).first()
+        if obj is not None:
             return obj
         return None
     d['index'] = G.index()
-    d['signature'] = signature_from_G(G)
+    d['signature'] = signature_from_group(G)
     d['coset_representatives'] = str([[x[0][0],x[0][1],x[1][0],x[1][1]] for x in G.coset_reps()])
     d['generators']             = str([[x[0][0],x[0][1],x[1][0],x[1][1]] for x in G.gens()])
 
-    tT = GP.permutation_action([1,1,0,1])
+    tT = G.permutation_action([1,1,0,1])
     d['permT'] = str([tT(i) for i in range(1,G.index()+1)])
     d['congruence'] = G.is_congruence()
     if G.is_congruence():
@@ -55,7 +147,7 @@ def sage_subgroup_to_db(G,update=True,**kwds):
     else:
         pass ## It takes too long to do that computation for a sage group... 
     s = []
-    for c in G.cusps():
+    for c in cusps:
         s.append( [c.numerator(),c.denominator()])
     d['cusp_representatives'] = str(s)
     if kwds.get('name','') != '':
@@ -69,15 +161,7 @@ def sage_subgroup_to_db(G,update=True,**kwds):
                 d['name'] = 'Gamma1({0})'.format(N)
             elif  G == Gamma(N):
                 d['name'] = 'Gamma({0})'.format(N)
-    G = Subgroup(**d)
-    try:
-        G.save()
-    except mongoengine.errors.NotUniqueError as e:
-        G = Subgroup.objects(permS=d['permS'],permR=d['permR']).first()
-        if update:
-            if not G is None:
-                G.update(**d)
-    return G                
+    return d
             
 def psage_subgroup_to_db(G,update=True,**kwds):
     r"""
@@ -106,7 +190,7 @@ def psage_subgroup_to_db(G,update=True,**kwds):
             if equal:
                 return g
         log.warning("Could not find this group in the database!")
-    d['signature'] = signature_from_G(G)
+    d['signature'] = signature_from_group(G)
     d['coset_representatives'] = str(G.coset_reps())
     d['generators'] = str(G.generators_as_slz_elts())
 
@@ -131,15 +215,7 @@ def psage_subgroup_to_db(G,update=True,**kwds):
     d['cusp_representatives'] = str(s)
     if G.find_name() != '':
         d['name'] = G.find_name()
-    G = Subgroup(**d)
-    try:
-        G.save()
-    except mongoengine.errors.NotUniqueError as e:
-        G = Subgroup.objects(permS=d['permS'],permR=d['permR']).first()
-        if update:
-            if not G is None:
-                G.update(**d)
-    return G
+    return d
 
 def import_from_dict(l,index_min=1,index_max=0):
     from psage import MySubgroup

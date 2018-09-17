@@ -1,22 +1,25 @@
 r"""
 
 """
-import os
-import logging
 from pymongo.uri_parser import parse_uri
-
+#from os.path import join, dirname
+from flask_dotenv import DotEnv
 class Config(object):
-    def __init__(self):
-        self.APP_NAME = 'Subgroups'
-        self.TESTING = False
-        self.PRODUCTION = False
-        self.ENVIRONMENT = 'Default'
-        self.SITE_NAME = 'Subgroups and modular forms'
-        self.LOG_LEVEL = int(os.getenv('LOG_LEVEL',logging.DEBUG))
-        self.DEBUG = True
-        #        self.MONGODB_SETTINGS = self.mongo_from_uri(
-        #            os.environ.get('MONGO_URI','mongodb://localhost:27017/subgroups'.format(self.ENVIRONMENT.lower())))
-        self.MONGODB_SETTINGS = self.mongo_from_uri('mongodb://localhost:27017/subgroups'.format(self.ENVIRONMENT.lower()))
+
+    @classmethod
+    def init_app(self,app):
+        #dotenv_path = join(dirname(__file__), '.env')
+        env = DotEnv(app)
+        env.init_app(app)
+        for key in ['APP_NAME','TESTING','PRODUCTION','ENVIRONMENT','SITE_NAME','LOG_LEVEL','DEBUG','MONGODB_URI']:
+            if not app.config.has_key(key):
+                raise ValueError,'Configuration key: {0} is missing!'.format(key)
+        app.config['MONGODB_SETTINGS'] = self.mongo_from_uri(app.config.get('MONGODB_URI'))
+        if app.config['ENVIRONMENT'].lower()=='testing':
+            # Ensure that we don't accidentally overwrite real database while testing.
+            app.config['MONGODB_SETTINGS'] = app.config['MONGODB_SETTINGS'].replace("mongodb","mongomock")
+            #if 'test' not in app.config['MONGODB_SETTINGS']['db']:
+            #    app.config['MONGODB_SETTINGS']['db'] += '_test'
 
     @staticmethod
     def mongo_from_uri(uri):

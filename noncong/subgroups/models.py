@@ -3,10 +3,11 @@ r"""
 Classes for representing subgroups of the modular group as mongoengine documents.
 
 """
+import pymongo
 from ..extensions import mongoeng as db
+from mongoengine import queryset_manager
 from ..backend.utils import list_of_tuples_to_json,string_of_list_to_cycles,mygetattr,lcm
 from flask import json
-#from flask.ext.mongoengine import Document
 import logging
 
 log = logging.getLogger(__name__)
@@ -31,6 +32,16 @@ class Signature(db.Document):
     e3    = db.IntField(required=True)
     ncusps= db.IntField(required=True)    
     name = db.StringField()
+    meta = {
+        'indexes': [
+            {'fields': ('index',), 'unique': False},
+            {'fields': ('genus',), 'unique': False},
+            {'fields': ('e2',), 'unique': False},
+            {'fields': ('e3',), 'unique': False},
+            {'fields': ('ncusps',), 'unique': False},
+            {'fields': ('index','genus','e2','e3','ncusps'),'unique':True}
+            ]
+    }
     def __init__(self,**kwds):
         super(Signature,self).__init__(**kwds)
         
@@ -61,8 +72,10 @@ class Subgroup(db.Document):
     # Permutations are stored as strings of lists, e.g. '[1,2,3]'
     # 
     permS                 = db.StringField(required=True) # permutation representing S   =[0,-1,1,0]
-    permR                 = db.StringField(required=True,unique_with='permS') # permutation representing R=ST=[0,-1,1,1]
+    permR                 = db.StringField(required=True) # permutation representing R=ST=[0,-1,1,1]
     permT                 = db.StringField(required=True) # permutation representing T   =[1,1,0,1]
+    # A combined field which is hashed to a unique index.
+    permS_permR           = db.StringField()
     ## Because the map between groups and permutations is *homomorphism*: permS*permT=permR
     label      = db.StringField() 
     name       = db.StringField()
@@ -96,12 +109,16 @@ class Subgroup(db.Document):
             {'fields':('e3',),'unique':False},
             {'fields':('genus',),'unique':False},
             {'fields':('ncusps',),'unique':False},                        
-            {'fields':('permS','permR'),'unique':True},
+            {'fields':[('permS_permR',pymongo.HASHED)]},
             {'fields':('generators',),'unique':True},
         ],
         'strict': False
     }
-
+    # Note that it is very hard to define a unique index here since the same group can be represented by many different
+    # permutations.
+    # We can try to find  a unique representative by using the "smallest" in some lexicographical sense, but
+    # we can't guarantee that this is the representation in the database.
+    #
     def save(self,**kwds):
         if self.signature is None:
             sig = Signature(e2=self.e2,e3=self.e3,ncusps=self.ncusps,genus=self.genus,index=self.index)
@@ -134,6 +151,12 @@ class Subgroup(db.Document):
             except ImportError:
                 pass
         self.generalized_level = self.get_generalized_level()
+        ## Now check if this exists
+        self.permS_permR=self.permS+self.permR
+        # Try harder to find self.
+        g = type(self).find_group(self)
+        if g is not None:
+            self.id = g.id
         super(Subgroup,self).save(**kwds)
     
     def __init__(self,**kwds):
@@ -142,7 +165,30 @@ class Subgroup(db.Document):
         #    sig =
         super(Subgroup,self).__init__(**kwds)
             
-        
+    @queryset_manager
+    def find_group(doc_cls, queryset,G):
+        """
+        Find a group in the database which is the same as the group G which is an instance of Subgroup.
+        :param G:
+        :return:
+        """
+        if not isinstance(G,Subgroup):
+            raise NotImplementedError
+        group = queryset.filter(permS_permR=G.permS_permR).first()
+        if group is not None:
+            return group
+        signature = G.signature
+        G = G._to_psage()
+        for group in queryset.filter(signature=signature):
+            try:
+                for gen in group.gens():
+                    if gen not in G:
+                        raise StopIteration
+                # If here then group is a subgroup of G and since the index is the same they must be equal
+                return group
+            except StopIteration:
+                pass
+        return None
 
     def __repr__(self):
         return str(self)
@@ -207,7 +253,17 @@ class Subgroup(db.Document):
 
     def conjugacy_class(self):
         return ConjugacyClassPSL.objects.filter(elements=self).first()
-    
+
+    def gens(self):
+        """
+        Return the generators of self as a list of tuples
+        :return:
+        """
+        # Check first that no one stored something malicious in our field.
+        if len(filter(lambda x: x.isalpha(),self.generators)) > 0:
+            raise ValueError,'Generator field contaains letters!: self.generators'.format(self.generators)
+        return eval(self.generators)
+
 class ConjugacyClassPSL(db.Document):
     """
     A conjugacy class of subgroups of PSL(2,Z)
@@ -272,7 +328,7 @@ class OldFormMap(db.Document):
     map = db.StringField()
 
     def __unicode__(self):
-        return "{0}: {1} --> {2}".format(self.map,self.supergroup,self.surgroup)
+        return "{0}: {1} --> {2}".format(self.map,self.supergroup,self.subgroup)
 
 # class ConjugacyClassPGL(db.Document):
 #     representative = db.ReferenceField(Subgroup,required=True,unique=True)

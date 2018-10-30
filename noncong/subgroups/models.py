@@ -102,6 +102,8 @@ class Subgroup(db.Document):
     generalized_level = db.IntField()
 
     supergroups = db.ListField(db.ReferenceField('Subgroup'))
+
+    gamma0n_cover = db.IntField() # largest N for which self is a subgroup of Gamma0(N)
     meta = {
         'indexes' : [
             {'fields':('index',),'unique':False},

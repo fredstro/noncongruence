@@ -8,7 +8,12 @@ class Config(object):
 
     @classmethod
     def init_app(self,app):
-        #dotenv_path = join(dirname(__file__), '.env')
+        """
+        Init the app with configuration from .env
+        :param app:
+        :return:
+        """
+
         env = DotEnv(app)
         env.init_app(app)
         for key in ['APP_NAME','TESTING','PRODUCTION','ENVIRONMENT','SITE_NAME','LOG_LEVEL','DEBUG','MONGODB_URI']:

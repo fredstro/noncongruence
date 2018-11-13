@@ -32,7 +32,8 @@ class ScatteringDeterminant(db.Document):
     meta = {
         'indexes' : [
             {'fields':('group','t','sigma'),'unique':True}
-            ]
+            ],
+        'db_alias': 'scattering-determinant'
     }
     group = db.ReferenceField(Subgroup,required=True)
     sigma = db.FloatField()

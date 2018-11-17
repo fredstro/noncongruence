@@ -243,7 +243,7 @@ class WeylsLaw(object):
                                            use_db=use_db, redo=redo,adaptive=adaptive)
         pts = MT.list()
 
-        Spts = [(x[0], -x[1]/RR.pi()/2. + NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
+        Spts = [(x[0], -x[1] + NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
         return Spline(Spts)
 
 

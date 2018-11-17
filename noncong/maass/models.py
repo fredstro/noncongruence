@@ -53,6 +53,9 @@ class ScatteringMatrixHalfSigns(db.Document):
             {'fields': ('group',), 'unique': True}
         ]
     }
+    def __unicode__(self):
+        return u"({1},{2}) : {0}".format(self.group
+                                         ,self.plus_count,self.minus_count)
         
 class MaassEigenvalue(db.Document):
     r"""

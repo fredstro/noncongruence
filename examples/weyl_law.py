@@ -6,7 +6,7 @@ from psage.matrix.matrix_complex_dense import Matrix_complex_dense
 from psage.modform.maass.eisenstein_series import scattering_determinant
 from psage.modform.arithgroup.mysubgroup import MySubgroup
 from noncong.subgroups.models import Subgroup
-from noncong.maass.models import MaassEigenvalue,ScatteringDeterminant,DeltaArg
+from noncong.maass.models import MaassEigenvalue,ScatteringDeterminant,DeltaArg, ScatteringMatrixHalfSigns
 from noncong.maass.encoder import ExtendedDecoder
 import pymongo
 

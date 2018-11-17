@@ -16,7 +16,10 @@ class Config(object):
         """
         env_file = os.getenv('DOTENV_FILE',os.path.join(app.root_path,'.env'))
         env = DotEnv(app)
-        env.init_app(app,env_file)
+        try:
+            env.init_app(app,env_file)
+        except UserWarning:
+            pass
         for key in ['APP_NAME','TESTING','PRODUCTION','ENVIRONMENT','SITE_NAME','LOG_LEVEL','DEBUG','MONGODB_URI']:
             if not app.config.has_key(key):
                 raise ValueError,'Configuration key: {0} is missing!'.format(key)

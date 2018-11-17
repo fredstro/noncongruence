@@ -46,8 +46,13 @@ class ScatteringMatrixHalfSigns(db.Document):
     Stores the number of +1 and -1 on the diagonal of \Phi(1/2)
     """
     group = db.ReferenceField(Subgroup,required=True)
-    plus_one = db.IntField()
-    minus_one= db.IntField()
+    plus_count = db.IntField()
+    minus_count = db.IntField()
+    meta = {
+        'indexes': [
+            {'fields': ('group',), 'unique': True}
+        ]
+    }
         
 class MaassEigenvalue(db.Document):
     r"""

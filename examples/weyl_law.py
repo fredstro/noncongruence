@@ -245,3 +245,15 @@ class WeylsLaw(object):
 
         Spts = [(x[0], -x[1]/RR.pi()/2. + NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
         return Spline(Spts)
+
+
+def scattering_determinant_signs(g,eps=1e-8):
+    x = ScatteringMatrixHalfSigns.objects(group=g).first()
+    if x is None:
+        M = MaassWaveForms(MySubgroup(g.permS,g.permR))
+        A = scattering_determinant(M,0.5,0.0,ret_matrix=True)
+        n_plus = len(filter(lambda x: abs(x-1)<eps,A.diagonal()))
+        n_minus = len(filter(lambda x: abs(x+1)<eps,A.diagonal()))
+        x = ScatteringMatrixHalfSigns(group=g,plus_count=n_plus,minus_count=n_minus)
+        x.save()
+    return x.plus_count,x.minus_count

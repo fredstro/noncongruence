@@ -226,7 +226,7 @@ class WeylsLaw(object):
             if abs(h) < 1e-16:
                 raise ArithmeticError, "Step size too small for g={0} and t={1}".format(self.group.id, t)
             total_arg_change += arg_diff
-            if verbose > 0:
+            if verbose >1:
                 print t, arg_diff, "\t", total_arg_change
             z_old = z
             t_old = t

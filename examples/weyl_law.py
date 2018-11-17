@@ -22,7 +22,7 @@ class WeylsLaw(object):
 
 
     """
-    def __init__(self,g):
+    def __init__(self,g,use_db=True):
         if not isinstance(g, Subgroup):
             raise ValueError, "Need an element of type Subgroup"
         self.group = g
@@ -30,6 +30,8 @@ class WeylsLaw(object):
         self._constant = None
         self.two_over_e = 0.73575888234288464319104754032 # 2/e
         self._space = None
+        if use_db:
+            self._connection = pymongo.MongoClient(host='localhost:27017', connect=True)
 
     def space(self):
         if self._space is None:
@@ -137,8 +139,7 @@ class WeylsLaw(object):
         """
         z = None
         if use_db:
-            conn = pymongo.MongoClient(host='localhost:27017', connect=True)
-            coll = conn['subgroups']['scattering_determinant']
+            coll = self._connection['subgroups']['scattering_determinant']
             s = {'group': self.group.id, 'sigma': float(0.5)}
             s['t'] = {'$lt': float(t + float(eps)), '$gt': float(t - float(eps))}
             z = coll.find_one(s)
@@ -177,7 +178,7 @@ class WeylsLaw(object):
         # If we want to use the existing values
         #if use_existing:
         #    return brute_force_arg_diff(g, T=T, ret_fun=True)
-        fourpi=4*RR.pi()
+        twopi=2*RR.pi()
         if not redo:
             coll1 = dbb['delta_arg']
             M = coll1.find_one({'group': self.group.id})
@@ -197,7 +198,7 @@ class WeylsLaw(object):
             total_arg_change = M.spline()(T0)
         else:
             total_arg_change = 0
-        l = [(t, total_arg_change/fourpi)]
+        l = [(t, total_arg_change/twopi)]
         dec = False
         i = 0
         while t < T:
@@ -227,9 +228,10 @@ class WeylsLaw(object):
                 print t, arg_diff, "\t", total_arg_change
             z_old = z
             t_old = t
-            vstr = "{0:0>13.10f}".format(float(t))
-            sys.stdout.write("\r" + vstr)
-            l.append((t, total_arg_change/fourpi))
+            if verbose>0:
+                vstr = "{0:0>13.10f}".format(float(t))
+                sys.stdout.write("\r" + vstr)
+            l.append((t, total_arg_change/twopi))
         return Spline(l)  # total_arg_change
 
     def S(self,T,h0=0.1,insert_nonexisting=True, use_existing=False,use_db=True, redo=False,adaptive=True):
@@ -238,5 +240,6 @@ class WeylsLaw(object):
         MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,
                                            use_db=use_db, redo=redo,adaptive=adaptive)
         pts = MT.list()
-        Spts = [(x[0], -x[1] + NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
+
+        Spts = [(x[0], -x[1]/RR.pi()/2. + NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
         return Spline(Spts)

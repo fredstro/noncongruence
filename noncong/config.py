@@ -27,7 +27,6 @@ class Config(object):
             self.mongo_from_uri(mongo_uri, alias="default"),
             self.mongo_from_uri(mongo_scattd_uri, alias="scattering-determinant")
         ]
-        print app.config['MONGODB_SETTINGS']
         if app.config['ENVIRONMENT'].lower()=='testing':
             # Ensure that we don't accidentally overwrite real database while testing.
             app.config['MONGODB_SETTINGS'] = app.config['MONGODB_SETTINGS'].replace("mongodb","mongomock")

@@ -22,7 +22,7 @@ class WeylsLaw(object):
 
 
     """
-    def __init__(self,g,use_db=True):
+    def __init__(self,g,use_db=True,verbose=0):
         if not isinstance(g, Subgroup):
             raise ValueError, "Need an element of type Subgroup"
         self.group = g
@@ -30,6 +30,7 @@ class WeylsLaw(object):
         self._constant = None
         self.two_over_e = 0.73575888234288464319104754032 # 2/e
         self._space = None
+        self._verbose = verbose
         if use_db:
             self._connection = pymongo.MongoClient(host='localhost:27017', connect=True)
 
@@ -179,6 +180,7 @@ class WeylsLaw(object):
         #if use_existing:
         #    return brute_force_arg_diff(g, T=T, ret_fun=True)
         twopi=2*RR.pi()
+        verbose = self._verbose
         if not redo:
             coll1 = dbb['delta_arg']
             M = coll1.find_one({'group': self.group.id})

@@ -41,6 +41,13 @@ class ScatteringDeterminant(db.Document):
     value = ComplexNumberField()
     is_zero=db.BooleanField()  ## Set to true to indicate that this is one of the located zeros 
 
+class ScatteringMatrixHalfSigns(db.Document):
+    """
+    Stores the number of +1 and -1 on the diagonal of \Phi(1/2)
+    """
+    group = db.ReferenceField(Subgroup,required=True)
+    plus_one = db.IntField()
+    minus_one= db.IntField()
         
 class MaassEigenvalue(db.Document):
     r"""

@@ -236,7 +236,7 @@ class WeylsLaw(object):
             l.append((t, total_arg_change/twopi))
         return Spline(l)  # total_arg_change
 
-    def S(self,T,h0=0.1,insert_nonexisting=True, use_existing=False,use_db=True, redo=False,adaptive=True):
+    def E(self,T,h0=0.1,insert_nonexisting=True, use_existing=False,use_db=True, redo=False,adaptive=True):
 
         NT = self.function__counting_discrete_eigenvalues()
         MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,

@@ -31,6 +31,8 @@ class WeylsLaw(object):
         self.two_over_e = 0.73575888234288464319104754032 # 2/e
         self._space = None
         self._verbose = verbose
+        self._NT = None
+        self._MT = None
         if use_db:
             self._connection = pymongo.MongoClient(host='localhost:27017', connect=True)
 
@@ -50,6 +52,10 @@ class WeylsLaw(object):
             self._constant =  -QQ(self.group.index) / QQ(144) + QQ(1) / QQ(8) * self.group.e2 + QQ(2) / QQ(9) * self.group.e3 \
                               - self.group.ncusps / QQ(4) + QQ(C) / 2.0
         return self._constant
+
+    def bound_for_gT(self):
+        return QQ(self.group.index) / QQ(8707) + QQ(1) / QQ(139) * self.group.e2 + QQ(2) / QQ(67) * self.group.e3 + \
+                self.group.ncusps*QQ(26)/QQ(75)
 
     def _scattering_matrix_trace_at_one_half(self):
         r"""
@@ -238,12 +244,12 @@ class WeylsLaw(object):
 
     def E(self,T,h0=0.1,insert_nonexisting=True, use_existing=False,use_db=True, redo=False,adaptive=True):
 
-        NT = self.function__counting_discrete_eigenvalues()
-        MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,
+        self._NT = self.function__counting_discrete_eigenvalues()
+        self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,
                                            use_db=use_db, redo=redo,adaptive=adaptive)
-        pts = MT.list()
+        pts = self._MT.list()
 
-        Spts = [(x[0], -x[1] + NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
+        Spts = [(x[0], -x[1] + self._NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
         return Spline(Spts)
 
 

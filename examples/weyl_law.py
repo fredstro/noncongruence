@@ -242,6 +242,73 @@ class WeylsLaw(object):
             l.append((t, total_arg_change/twopi))
         return Spline(l)  # total_arg_change
 
+
+    def _function__winding_number__use_all(self, T = 10, T0 = 0, ret_fun=True):
+        """
+        Use all values in the database to compute the change in argument.
+
+        :param T:
+        :param T0:
+        :param ret_fun:
+        :return:
+        """
+        oldx = ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t=T0).first()
+        if oldx is None:
+            raise ValueError,"Starting value at: {0} is not in the database!".format(T0)
+        if abs(oldx.value + 1) < 1e-10:
+            oldarg = -RR.pi()
+        else:
+            oldarg = arg(oldx.value)
+        branch = 0
+        xold = oldx.value
+        totarg = 0
+        told = 0
+        maxdiff = 0
+        pts = [(T0, 0)]
+        for x in ScatteringDeterminant.objects.filter(group=g, sigma=0.5, t__lt=T + 1e-10).order_by('t'):
+            if x.t <= T0:
+                continue
+            new_arg = arg(x.value)
+            argdiff = new_arg - oldarg
+            arg1 = new_arg + branch * 2 * RR.pi()
+            arg2 = new_arg + branch * 2 * RR.pi() + 2 * RR.pi()
+            arg3 = new_arg + branch * 2 * RR.pi() - 2 * RR.pi()
+            t1 = abs(arg1 - oldarg);
+            t2 = abs(arg2 - oldarg);
+            t3 = abs(arg3 - oldarg)
+            if min(t1, t2, t3) == t1:
+                thisarg = arg1
+            elif min(t1, t2, t3) == t2:
+                branch += 1
+                thisarg = arg2
+            else:
+                branch = branch - 1
+                thisarg = arg3
+            argdiff = thisarg - oldarg
+            if abs(argdiff) > 0.1:
+                print "t={0} new val={1} old val={2} argdiff={3} new_arg={4} oldarg={5}".format(x.t, x.value, xold,
+                                                                                                argdiff, new_arg,
+                                                                                                oldarg)
+            totarg += argdiff
+            if ret_fun:
+                pts.append((x.t, totarg))
+
+            oldarg = new_arg
+            tmpt = abs(x.t - told)
+            if tmpt > maxdiff:
+                maxdiff = tmpt
+                maxt = x.t
+            xold = x.value
+            told = x.t
+        if self.verbose>0:
+            print "max diff =",maxdiff
+        if ret_fun:
+            return Spline(pts)
+        return totarg
+
+
+
+
     def E(self,T,h0=0.1,insert_nonexisting=True, use_existing=False,use_db=True, redo=False,adaptive=True):
 
         self._NT = self.function__counting_discrete_eigenvalues()
@@ -251,6 +318,7 @@ class WeylsLaw(object):
 
         Spts = [(x[0], -x[1] + self._NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
         return Spline(Spts)
+
 
 
 def scattering_determinant_signs(g,eps=1e-8):

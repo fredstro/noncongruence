@@ -265,7 +265,10 @@ class WeylsLaw(object):
         told = 0
         maxdiff = 0
         pts = [(T0, 0)]
-        for x in ScatteringDeterminant.objects.filter(group=g, sigma=0.5, t__lt=T + 1e-10).order_by('t'):
+        for x in ScatteringDeterminant.objects.filter(group=g, sigma=0.5, t__gt=T0,t__lt=T + 1e-10).order_by('t'):
+            if self._verbose>1:
+                vstr = "{0:0>13.10f}".format(float(x.t))
+                sys.stdout.write("\r" + vstr)
             if x.t <= T0:
                 continue
             new_arg = arg(x.value)
@@ -300,7 +303,7 @@ class WeylsLaw(object):
                 maxt = x.t
             xold = x.value
             told = x.t
-        if self.verbose>0:
+        if self._verbose>0:
             print "max diff =",maxdiff
         if ret_fun:
             return Spline(pts)

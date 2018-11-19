@@ -245,9 +245,9 @@ class WeylsLaw(object):
             M = coll1.find_one({'group': self.group.id})
             if M is not None:
                 if M.get('maxT', 0) <= T:
-                    coll1.update_one({'_id':M['_id'],'pts':dumps(l),'maxT':t})
+                    coll1.update_one({'_id':M['_id'],'pts':dumps(l),'maxT':float(t)})
             else:
-                coll1.insert_one({'group': self.group.id, 'pts': dumps(l), 'maxT': t})
+                coll1.insert_one({'group': self.group.id, 'pts': dumps(l), 'maxT': float(t)})
 
         return Spline(l)  # total_arg_change
 

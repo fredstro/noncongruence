@@ -269,8 +269,8 @@ class WeylsLaw(object):
             if self._verbose>1:
                 vstr = "{0:0>13.10f}".format(float(x.t))
                 sys.stdout.write("\r" + vstr)
-            if x.t <= T0:
-                continue
+            #if x.t <= T0:
+            #    continue
             new_arg = arg(x.value)
             argdiff = new_arg - oldarg
             arg1 = new_arg + branch * 2 * RR.pi()

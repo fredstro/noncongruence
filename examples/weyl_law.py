@@ -153,7 +153,7 @@ class WeylsLaw(object):
         if z is None:
             z = scattering_determinant(self.space(), 0.5, t)
             z = complex(z)
-            if insert_nonexisting:
+            if insert_nonexisting and use_db:
                 zz = {'re': z.real, 'im': z.imag, '__type__': 'cplx'}
                 data = {'group': self.group.id, 'sigma': float(0.5), 't': float(t), 'value': json.dumps(zz)}
                 coll.insert_one(data)
@@ -179,18 +179,18 @@ class WeylsLaw(object):
         """
         h = h0
         t_old = T0
-        conn = pymongo.MongoClient(host='localhost:27017', connect=True)
-        dbb = conn['subgroups']
-        coll = dbb['scattering_determinant']
+        #conn = pymongo.MongoClient(host='localhost:27017', connect=True)
+        #dbb = conn['subgroups']
+        #coll = dbb['scattering_determinant']
         # If we want to use the existing values
         #if use_existing:
         #    return brute_force_arg_diff(g, T=T, ret_fun=True)
         twopi=2*RR.pi()
         verbose = self._verbose
         if not redo:
-            coll1 = dbb['delta_arg']
+            coll1 = self._connection['subgroups']['delta_arg']
             M = coll1.find_one({'group': self.group.id})
-            if not M is None:
+            if M is not None:
                 if M.get('maxT', 0) >= T:
                     return Spline(loads(M['pts']))
                     # coll = ScatteringDeterminant._get_collection()
@@ -240,6 +240,15 @@ class WeylsLaw(object):
                 vstr = "{0:0>13.10f}".format(float(t))
                 sys.stdout.write("\r" + vstr)
             l.append((t, total_arg_change/twopi))
+        if insert_nonexisting:
+            coll1 = self._connection['subgroups']['delta_arg']
+            M = coll1.find_one({'group': self.group.id})
+            if M is not None:
+                if M.get('maxT', 0) <= T:
+                    coll1.update_one({'_id':M['_id'],'pts':dumps(l),'maxT':t})
+            else:
+                coll1.insert_one({'group': self.group.id, 'pts': dumps(l), 'maxT': t})
+
         return Spline(l)  # total_arg_change
 
 

@@ -337,6 +337,10 @@ class WeylsLaw(object):
                 starting_value_MT = self._NT(T0) - self.explicit_value(T0) - starting_value
             else:
                 starting_value_MT = 0
+            if self._verbose > 1:
+                print "starting value E =",starting_value
+                print "starting_value_MT=",starting_value_MT
+                print "T0,T=",T0,T
             self._MT = self._function__winding_number__use_all(T=T, T0=T0, start_value=starting_value_MT,ret_fun=True)
         else:
             self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,

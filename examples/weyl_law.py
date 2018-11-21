@@ -332,7 +332,7 @@ class WeylsLaw(object):
         if use_all_from_db:
             # We use the start value deduced from the start value for the E(T) function:
             if T0>0 and starting_value:
-                starting_value_MT =  self._NT(NT) - self.explicit_value(T0) starting_value
+                starting_value_MT =  self._NT(T0) - self.explicit_value(T0) - starting_value
             self._MT = self.function__winding_number_use_all(T=T, T0=T0, start_value=starting_value_MT,ret_fun=True)
         else:
             self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,

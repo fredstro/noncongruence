@@ -326,7 +326,8 @@ class WeylsLaw(object):
 
 
 
-    def E(self,T,h0=0.1,T0=0,insert_nonexisting=True, use_existing=False,use_db=True, use_all_from_db=False,redo=False,adaptive=True,starting_value=0):
+    def E(self,T,h0=0.1,T0=0,insert_nonexisting=True, use_existing=False,use_db=True, use_all_from_db=False,redo=False,
+        adaptive=True,starting_value=0,num_spline_pts=1000):
 
         self._NT = self.function__counting_discrete_eigenvalues()
         if use_all_from_db:
@@ -338,8 +339,12 @@ class WeylsLaw(object):
             self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,
                                            use_db=use_db, redo=redo,adaptive=adaptive)
         pts = self._MT.list()
-
-        Spts = [(x[0], -x[1] + self._NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
+        # This might be a very large list... replace with a smaller list
+        x0,y0=pts[0]; x1,y1=pts[-1]
+        h = (x1-x0)/float(num_spline_pts)
+        pts = [h*i for i in range(num_spline_pts)]
+        #Spts = [(x[0], -x[1] + self._NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
+        Spts = [(x, -self._MT(x) + self._NT(x) - self.explicit_value(x)) for x in pts]
         return Spline(Spts)
 
 

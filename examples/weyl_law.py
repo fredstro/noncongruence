@@ -165,7 +165,7 @@ class WeylsLaw(object):
         return t, z
 
     def function__winding_number(self, T=10, T0=0, insert_nonexisting=True, use_existing=False, h0=0.1, redo=False,
-                                      use_db=True,adaptive=True,
+                                      use_db=True,adaptive=True,max_arg_diff=0.01, arg_factor=0.995,
                                     verbose=0):
 
         """
@@ -216,15 +216,15 @@ class WeylsLaw(object):
             t1, z = self.scattering_determinant_single_value(t,use_db=use_db,insert_nonexisting=insert_nonexisting)
             arg_diff = arg(z / z_old)
             if adaptive:
-                if abs(arg_diff) > 0.05:
-                    h = h * 0.995
+                if abs(arg_diff) > max_arg_diff:
+                    h = h * arg_factor
                     t = t_old
                     dec = True
                     if verbose > 1:
                         print "decrease h at t={0} to h={1} arg_diff={2}".format(t, h, arg_diff)
                     continue
-                elif abs(arg_diff) < 0.05 and not dec:  # we don't want to increase h after we decreased it
-                    h = min(h / 0.995, h0)
+                elif abs(arg_diff) < max_arg_diff and not dec:  # we don't want to increase h after we decreased it
+                    h = min(h / arg_factor, h0)
                     if verbose > 1:
                         print "increase h at t={0} to h={1}".format(t, h)
                     t = t_old
@@ -278,7 +278,7 @@ class WeylsLaw(object):
         twopi = RR.pi()*2.0
         totarg = start_value
         told = 0
-        maxdiff = T0
+        maxdiff = 0
         pts = [(T0, start_value/twopi)]
         for x in ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t__gt=T0,t__lt=T + 1e-10).order_by('t'):
             if self._verbose>1:
@@ -329,7 +329,7 @@ class WeylsLaw(object):
 
 
     def E(self,T,h0=0.1,T0=0,insert_nonexisting=True, use_existing=False,use_db=True, use_all_from_db=False,redo=False,
-        adaptive=True,starting_value=0,num_spline_pts=1000):
+        adaptive=True,starting_value=0,num_spline_pts=1000,max_arg_diff=1e-2,arg_factor=0.995):
 
         self._NT = self.function__counting_discrete_eigenvalues()
         if use_all_from_db:
@@ -346,7 +346,8 @@ class WeylsLaw(object):
             self._MT = self._function__winding_number__use_all(T=T, T0=T0, start_value=starting_value_MT,ret_fun=True)
         else:
             self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,
-                                           use_db=use_db, redo=redo,adaptive=adaptive)
+                                           use_db=use_db, redo=redo,adaptive=adaptive,max_arg_diff=max_arg_diff,
+                                                     arg_factor=arg_factor)
         pts = self._MT.list()
         # This might be a very large list... replace with a smaller list
         x0,y0=pts[0]; x1,y1=pts[-1]

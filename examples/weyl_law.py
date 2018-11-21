@@ -344,6 +344,7 @@ class WeylsLaw(object):
 
 
 
+
 def scattering_determinant_signs(g,eps=1e-8):
     x = ScatteringMatrixHalfSigns.objects(group=g).first()
     if x is None:
@@ -354,3 +355,16 @@ def scattering_determinant_signs(g,eps=1e-8):
         x = ScatteringMatrixHalfSigns(group=g,plus_count=n_plus,minus_count=n_minus)
         x.save()
     return x.plus_count,x.minus_count
+
+
+def average_int(fun,T0=0):
+    """
+    Compute  T**-1 * \int_0^T fun(t) dt as a function of T
+    :param fun:
+    :param T:
+    :param T0:
+    :return:
+    """
+    if isinstance(fun,Spline):
+        intpts = [(x[0],fun.definite_integral(T0,x[0])/x[0]) for x in fun.list() if x[0]!=0]
+    return Spline(intpts)

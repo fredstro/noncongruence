@@ -341,7 +341,7 @@ class WeylsLaw(object):
         pts = self._MT.list()
         # This might be a very large list... replace with a smaller list
         x0,y0=pts[0]; x1,y1=pts[-1]
-        h = (x1-x0)/float(num_spline_pts)
+        h = (x1-x0)/float(num_spline_pts-1)
         pts = [x0+h*i for i in range(num_spline_pts)]
         #Spts = [(x[0], -x[1] + self._NT(x[0]) - self.explicit_value((x[0]))) for x in pts]
         Spts = [(x, -self._MT(x) + self._NT(x) - self.explicit_value(x)) for x in pts]

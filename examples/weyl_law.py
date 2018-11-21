@@ -148,7 +148,7 @@ class WeylsLaw(object):
         """
         z = None
         if use_db:
-            coll = self._connection['subgroups']['scattering_determinant']
+            coll = ScatteringDeterminant._get_collection()
             s = {'group': self.group.id, 'sigma': float(0.5)}
             s['t'] = {'$lt': float(t + float(eps)), '$gt': float(t - float(eps))}
             z = coll.find_one(s)
@@ -252,7 +252,7 @@ class WeylsLaw(object):
                 else:
                     coll1.insert_one({'group': self.group.id, 'pts': dumps(l), 'maxT': float(t)})
             except Exception as e:
-                log.debug("ERROR:{0}".format(e))
+                log.critical("ERROR:{0}".format(e))
         return Spline(l)  # total_arg_change
 
 
@@ -276,10 +276,10 @@ class WeylsLaw(object):
         branch = 0
         xold = oldx.value
         twopi = RR.pi()*2.0
-        totarg = start_value*twopi
+        totarg = start_value
         told = 0
         maxdiff = T0
-        pts = [(T0, start_value)]
+        pts = [(T0, start_value/twopi)]
         for x in ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t__gt=T0,t__lt=T + 1e-10).order_by('t'):
             if self._verbose>1:
                 vstr = "{0:0>13.10f}".format(float(x.t))
@@ -320,6 +320,7 @@ class WeylsLaw(object):
             told = x.t
         if self._verbose>0:
             print "max diff =",maxdiff
+            print
         if ret_fun:
             return Spline(pts)
         return totarg
@@ -335,6 +336,7 @@ class WeylsLaw(object):
             # We use the start value deduced from the start value for the E(T) function:
             if T0>0 and starting_value:
                 starting_value_MT = self._NT(T0) - self.explicit_value(T0) - starting_value
+                starting_value_MT *= RR.pi()*2.0
             else:
                 starting_value_MT = 0
             if self._verbose > 1:

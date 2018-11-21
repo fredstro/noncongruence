@@ -256,12 +256,13 @@ class WeylsLaw(object):
         return Spline(l)  # total_arg_change
 
 
-    def _function__winding_number__use_all(self, T = 10, T0 = 0, ret_fun=True):
+    def _function__winding_number__use_all(self, T = 10, T0 = 0, start_value=0,ret_fun=True):
         """
         Use all values in the database to compute the change in argument.
 
         :param T:
         :param T0:
+        :param start_value: Start the argument counting with this argument (to make it easier to work with partial counts)
         :param ret_fun:
         :return:
         """
@@ -277,7 +278,7 @@ class WeylsLaw(object):
         totarg = 0
         told = 0
         maxdiff = 0
-        pts = [(T0, 0)]
+        pts = [(T0, start_value)]
         for x in ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t__gt=T0,t__lt=T + 1e-10).order_by('t'):
             if self._verbose>1:
                 vstr = "{0:0>13.10f}".format(float(x.t))

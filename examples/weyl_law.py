@@ -278,7 +278,8 @@ class WeylsLaw(object):
         totarg = 0
         told = 0
         maxdiff = 0
-        pts = [(T0, start_value)]
+        twopi = RR.pi()*2.0
+        pts = [(T0, start_value/twopi)]
         for x in ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t__gt=T0,t__lt=T + 1e-10).order_by('t'):
             if self._verbose>1:
                 vstr = "{0:0>13.10f}".format(float(x.t))
@@ -308,7 +309,7 @@ class WeylsLaw(object):
                                                                                                 oldarg)
             totarg += argdiff
             if ret_fun:
-                pts.append((x.t, totarg))
+                pts.append((x.t, totarg/twopi))
 
             oldarg = new_arg
             tmpt = abs(x.t - told)
@@ -333,7 +334,9 @@ class WeylsLaw(object):
         if use_all_from_db:
             # We use the start value deduced from the start value for the E(T) function:
             if T0>0 and starting_value:
-                starting_value_MT =  self._NT(T0) - self.explicit_value(T0) - starting_value
+                starting_value_MT = self._NT(T0) - self.explicit_value(T0) - starting_value
+            else:
+                starting_value_MT = 0
             self._MT = self._function__winding_number__use_all(T=T, T0=T0, start_value=starting_value_MT,ret_fun=True)
         else:
             self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,

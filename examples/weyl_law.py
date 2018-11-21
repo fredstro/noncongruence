@@ -275,11 +275,11 @@ class WeylsLaw(object):
             oldarg = arg(oldx.value)
         branch = 0
         xold = oldx.value
-        totarg = 0
+        twopi = RR.pi()*2.0
+        totarg = start_value*twopi
         told = 0
         maxdiff = T0
-        twopi = RR.pi()*2.0
-        pts = [(T0, start_value/twopi)]
+        pts = [(T0, start_value)]
         for x in ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t__gt=T0,t__lt=T + 1e-10).order_by('t'):
             if self._verbose>1:
                 vstr = "{0:0>13.10f}".format(float(x.t))

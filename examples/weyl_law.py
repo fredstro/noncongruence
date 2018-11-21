@@ -9,7 +9,9 @@ from noncong.subgroups.models import Subgroup
 from noncong.maass.models import MaassEigenvalue,ScatteringDeterminant,DeltaArg, ScatteringMatrixHalfSigns
 from noncong.maass.encoder import ExtendedDecoder
 import pymongo
+import logging
 
+log = logging.getLogger(__name__)
 class WeylsLaw(object):
     """
     Class for computing and representing the Weyl's law in Theorem 5.
@@ -243,12 +245,14 @@ class WeylsLaw(object):
         if insert_nonexisting:
             coll1 = self._connection['subgroups']['delta_arg']
             M = coll1.find_one({'group': self.group.id})
-            if M is not None:
-                if M.get('maxT', 0) <= T:
-                    coll1.update_one({'_id':M['_id']},{"$set":{'pts': dumps(l),'maxT':float(t)}})
-            else:
-                coll1.insert_one({'group': self.group.id, 'pts': dumps(l), 'maxT': float(t)})
-
+            try:
+                if M is not None:
+                    if M.get('maxT', 0) <= T:
+                        coll1.update_one({'_id':M['_id']},{"$set":{'pts': dumps(l),'maxT':float(t)}})
+                else:
+                    coll1.insert_one({'group': self.group.id, 'pts': dumps(l), 'maxT': float(t)})
+            except Exception as e:
+                log.debug("ERROR:{0}".format(e))
         return Spline(l)  # total_arg_change
 
 

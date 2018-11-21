@@ -277,7 +277,7 @@ class WeylsLaw(object):
         xold = oldx.value
         totarg = 0
         told = 0
-        maxdiff = 0
+        maxdiff = T0
         twopi = RR.pi()*2.0
         pts = [(T0, start_value/twopi)]
         for x in ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t__gt=T0,t__lt=T + 1e-10).order_by('t'):

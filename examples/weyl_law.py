@@ -211,7 +211,7 @@ class WeylsLaw(object):
             if M:
                 total_arg_change = M.spline()(T0)
             else:
-                total_arg_change
+                total_arg_change = 0
         else:
             total_arg_change = 0
         l = [(t, total_arg_change/twopi)]

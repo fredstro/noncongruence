@@ -164,7 +164,8 @@ class WeylsLaw(object):
             z = json.loads(z['value'], cls=ExtendedDecoder)
         return t, z
 
-    def function__winding_number(self, T=10, T0=0, insert_nonexisting=True, use_existing=False, h0=0.1, redo=False,
+    def function__winding_number(self, T=10, T0=0, insert_nonexisting=True, use_existing=False, starting_value=None,
+                                 h0=0.1, redo=False,
                                       use_db=True,adaptive=True,max_arg_diff=0.01, arg_factor=0.995,
                                     verbose=0):
 
@@ -202,10 +203,15 @@ class WeylsLaw(object):
 
         t = T0
         t, z_old = self.scattering_determinant_single_value(t,use_db=use_db,insert_nonexisting=insert_nonexisting)
-        if T0 > 0:
+        if T0 > 0 and starting_value:
+            total_arg_change = starting_value
+        elif T0>0:
             ## Get Delta arg at T0:
             M = DeltaArg.objects.filter(group=self.group).first()
-            total_arg_change = M.spline()(T0)
+            if M:
+                total_arg_change = M.spline()(T0)
+            else:
+                total_arg_change
         else:
             total_arg_change = 0
         l = [(t, total_arg_change/twopi)]

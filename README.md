@@ -27,17 +27,18 @@ this creates a directory 'subgroups'  and you can now:
 3. Insert all data into your local mongo database:
 > mongorestore -d subgroups data/subgroups/
 
+(This was creaed using `mongodump -d 
+
 # If you want to use python without Sage
 
-It is generally considered best to setup and run python modulesin a virtual environment
+It is generally considered best to setup and run python modules in a virtual environment
 
 1. Instal virtualenv wrapper: https://virtualenvwrapper.readthedocs.io/
 2. Make a virtual environment
 > mkvirtualenv noncong
 This also activates the environment.
 3. Install requirements
-> pip install flask-mongoengine
-> pip install ipython==5.0
+> pip install -r requirements.txt
 
 # Access the database 
 

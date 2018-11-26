@@ -167,6 +167,7 @@ class WeylsLaw(object):
     def function__winding_number(self, T=10, T0=0, insert_nonexisting=True, use_existing=False, starting_value=None,
                                  h0=0.1, redo=False,
                                       use_db=True,adaptive=True,max_arg_diff=0.01, arg_factor=0.995,
+                                    min_step_size=1e-12,
                                     verbose=0):
 
         """
@@ -234,10 +235,9 @@ class WeylsLaw(object):
                     if verbose > 1:
                         print "increase h at t={0} to h={1}".format(t, h)
                     t = t_old
-                    dec = True
                     continue
-            dec = False
-            if abs(h) < 1e-16:
+            if abs(h) < min_step_size and not dec:
+                h = min(h/arg_factor,h0)
                 raise ArithmeticError, "Step size too small for g={0} and t={1}".format(self.group.id, t)
             total_arg_change += arg_diff
             if verbose >1:
@@ -248,6 +248,7 @@ class WeylsLaw(object):
                 vstr = "{0:0>13.10f}".format(float(t))
                 sys.stdout.write("\r" + vstr)
             l.append((t, total_arg_change/twopi))
+            dec = False
         if insert_nonexisting:
             coll1 = self._connection['subgroups']['delta_arg']
             M = coll1.find_one({'group': self.group.id})
@@ -335,7 +336,7 @@ class WeylsLaw(object):
 
 
     def E(self,T,h0=0.1,T0=0,insert_nonexisting=True, use_existing=False,use_db=True, use_all_from_db=False,redo=False,
-        adaptive=True,starting_value=0,num_spline_pts=1000,max_arg_diff=1e-2,arg_factor=0.995):
+        adaptive=True,starting_value=0,num_spline_pts=1000,max_arg_diff=1e-2,arg_factor=0.995,min_step_size=1e-12):
 
         self._NT = self.function__counting_discrete_eigenvalues()
         if use_all_from_db:
@@ -353,7 +354,7 @@ class WeylsLaw(object):
         else:
             self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,
                                            use_db=use_db, redo=redo,adaptive=adaptive,max_arg_diff=max_arg_diff,
-                                                     arg_factor=arg_factor)
+                                                     arg_factor=arg_factor,min_step_size=min_step_size)
         pts = self._MT.list()
         # This might be a very large list... replace with a smaller list
         x0,y0=pts[0]; x1,y1=pts[-1]

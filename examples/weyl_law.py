@@ -238,6 +238,7 @@ class WeylsLaw(object):
                     continue
             if abs(h) < min_step_size and not dec:
                 h = min(h/arg_factor,h0)
+            if abs(h) < 1e-16:
                 raise ArithmeticError, "Step size too small for g={0} and t={1}".format(self.group.id, t)
             total_arg_change += arg_diff
             if verbose >1:

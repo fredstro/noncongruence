@@ -94,9 +94,9 @@ sage: for ev in [1.56460530796110,2.11939343023923,2.50414532509967,2.9159276247
     er1 =  abs(F1.C(-1)-z)  
     er2 = abs(F1.C(-1)+z)
     if er1 < 6e-10:
-        print "{0} \t {1:.0e} \t even".format(ev,float(er1))
+        print("{0} \t {1:.0e} \t even".format(ev,float(er1)))
     elif er2 < 6e-10:
-        print "{0} \t {1:.0e} \t odd".format(ev,float(er2))
+        print("{0} \t {1:.0e} \t odd".format(ev,float(er2)))
     else:
         raise ArithmeticError
 # Table 5a
@@ -113,7 +113,7 @@ sage: z = CC(0,2*RR.pi()*k/n).exp()
 sage: for ev in [2.7818731828528, 3.3718432084177,3.7603510695428, 4.2298571733650, 4.8535236823625]:
      F1 = M1.get_element(ev,compute=True)
      er = abs(F1.C(-1)+z)
-     print "{0} \t {1:.0e} ".format(ev,float(er))
+     print("{0} \t {1:.0e} ".format(ev,float(er)))
      assert er < 6e-11
 # Table 5b
 sage: s='(1)(2)(3 4)(5 6)(7 8)(9 10)'
@@ -128,7 +128,7 @@ sage: M2=psage.modform.maass.all.MaassWaveForms(G2)
 sage: for ev in [2.4093187748458, 3.2980390023681, 3.7095318601808, 4.2745965949785, 4.5864668030104]:
      F2 = M2.get_element(ev,compute=True)
      er = abs(F2.C(-1)+z)
-     print "{0} \t {1:.0e} ".format(ev,float(er))
+     print("{0} \t {1:.0e} ".format(ev,float(er)))
      assert er < 3e-8
 
 # Table 5c
@@ -144,7 +144,7 @@ sage: z = CC(0,2*RR.pi()*k/n).exp()
 sage: for ev in [1.9099559058915, 3.2045604949759, 3.5047586985069, 4.2075358132024, 4.7774437178153]:
      F3 = M3.get_element(ev,compute=True)
      er = abs(F3.C(-1)+z)
-     print "{0} \t {1:.0e} ".format(ev,float(er))
+     print("{0} \t {1:.0e} ".format(ev,float(er)))
      assert er < 4e-8
 
 # Table 5d
@@ -160,7 +160,7 @@ sage: z = CC(0,2*RR.pi()*k/n).exp()
 sage: for ev in [2.6817198332904, 3.5645125659019, 4.4420512498009, 4.7018937088526 , 4.9743710668935]:
      F4 = M4.get_element(ev,compute=True)
      er = abs(F4.C(-1)+z)
-     print "{0} \t {1:.0e} ".format(ev,float(er))
+     print("{0} \t {1:.0e} ".format(ev,float(er)))
      assert er < 8e-9
 
 # Table 5e
@@ -176,7 +176,7 @@ sage: z = CC(0,2*RR.pi()*k/n).exp()
 sage: for ev in [3.0877339408933,3.5070902176928,4.3456594421154]:
     F5 = M5.get_element(ev,compute=True)
     er = abs(F5.C(-1)+z)
-    print "{0} \t {1:.0e} ".format(ev,float(er))
+    print("{0} \t {1:.0e} ".format(ev,float(er)))
     assert er < 8e-9
 
 sage: s='(1 2)(3 4)(5 6)(7 8)(9 10)'
@@ -191,7 +191,7 @@ sage: z = CC(0,2*RR.pi()*k/n).exp()
 sage: for ev in [2.5744038863311,3.7941339745816,4.0617322627988,4.6861370442514]:
     F6 = M6.get_element(ev,compute=True)
     er = abs(F6.C(-1)+z)
-    print "{0} \t {1:.0e} ".format(ev,float(er))
+    print("{0} \t {1:.0e} ".format(ev,float(er)))
     assert er < 8e-9
 
 ##

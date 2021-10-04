@@ -85,7 +85,7 @@ def print_table_of_groups(reps_only=0,index_max=7,format='latex',**kwds):
         cc_list = list(ConjugacyClassPSL.objects.filter(signature = sig,is_representative_class=True))
         cc_list.sort(cmp=c_sort) 
         for c in cc_list:
-#            print c
+#            print(c)
             s+=conjugacy_class_table_row(c,format=format,verify=verify)+"\n"
             #
             #s+="{0}\n".format(c.representative)
@@ -130,7 +130,7 @@ def conjugacy_class_table_row(c,format='latex',verify=False):
             B = symms.get('tIIb',[])
             if B != []:
                 k = "tIIb: {B}".format(B=B)
-                print k
+                print(k)
     if verify:
         try:
             G = g._to_psage()

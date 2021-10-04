@@ -6,8 +6,8 @@ Author: Fredrik Stromberg
 """
 
 from flask import Flask
-from extensions import mongoeng
-import config
+from .extensions import mongoeng
+import noncong.config
 #import subgroups
 #import noncong.backend.print_table
 

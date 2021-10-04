@@ -26,7 +26,7 @@ class WeylsLaw(object):
     """
     def __init__(self,g,use_db=True,verbose=0):
         if not isinstance(g, Subgroup):
-            raise ValueError, "Need an element of type Subgroup"
+            raise ValueError("Need an element of type Subgroup")
         self.group = g
         self._trace_scattering_matrix_one_minus_half = None
         self._constant = None
@@ -82,7 +82,7 @@ class WeylsLaw(object):
         :return:
         """
         if t < 0:
-            raise ValueError,"Need t>=0!"
+            raise ValueError("Need t>=0!")
         c = self.constant()
         if t == 0:
             return c
@@ -104,7 +104,7 @@ class WeylsLaw(object):
             if t>T:
                 t = T
             z = self.explicit_value(t)
-            #print t,z,z_old
+            #print(t,z,z_old)
             if abs(z-z_old)>0.1:
                 h = h*0.95
                 t = t_old
@@ -131,7 +131,7 @@ class WeylsLaw(object):
         """
         evs = [(0,1)] # the constant function
         for ev in MaassEigenvalue.objects.filter(group=self.group):
-            if ev.dim is None:
+            if not ev.dim:
                 dim = 1
             else:
                 dim = ev.dim
@@ -228,21 +228,21 @@ class WeylsLaw(object):
                     t = t_old
                     dec = True
                     if verbose > 1:
-                        print "decrease h at t={0} to h={1} arg_diff={2}".format(t, h, arg_diff)
+                        print("decrease h at t={0} to h={1} arg_diff={2}".format(t, h, arg_diff))
                     continue
                 elif abs(arg_diff) < max_arg_diff and not dec:  # we don't want to increase h after we decreased it
                     h = min(h / arg_factor, h0)
                     if verbose > 1:
-                        print "increase h at t={0} to h={1}".format(t, h)
+                        print("increase h at t={0} to h={1}".format(t, h))
                     t = t_old
                     continue
             if abs(h) < min_step_size and not dec:
                 h = min(h/arg_factor,h0)
             if abs(h) < 1e-16:
-                raise ArithmeticError, "Step size too small for g={0} and t={1}".format(self.group.id, t)
+                raise ArithmeticError("Step size too small for g={0} and t={1}".format(self.group.id, t))
             total_arg_change += arg_diff
             if verbose >1:
-                print t, arg_diff, "\t", total_arg_change
+                print(t, arg_diff, "\t", total_arg_change)
             z_old = z
             t_old = t
             if verbose>0:
@@ -276,7 +276,7 @@ class WeylsLaw(object):
         """
         oldx = ScatteringDeterminant.objects.filter(group=self.group, sigma=0.5, t=T0).first()
         if oldx is None:
-            raise ValueError,"Starting value at: {0} is not in the database!".format(T0)
+            raise ValueError("Starting value at: {0} is not in the database!".format(T0))
         if abs(oldx.value + 1) < 1e-10:
             oldarg = -RR.pi()
         else:
@@ -312,9 +312,9 @@ class WeylsLaw(object):
                 thisarg = arg3
             argdiff = thisarg - oldarg
             if abs(argdiff) > 0.1:
-                print "t={0} new val={1} old val={2} argdiff={3} new_arg={4} oldarg={5}".format(x.t, x.value, xold,
+                print("t={0} new val={1} old val={2} argdiff={3} new_arg={4} oldarg={5}".format(x.t, x.value, xold,
                                                                                                 argdiff, new_arg,
-                                                                                                oldarg)
+                                                                                                oldarg))
             totarg += argdiff
             if ret_fun:
                 pts.append((x.t, totarg/twopi))
@@ -327,7 +327,7 @@ class WeylsLaw(object):
             xold = x.value
             told = x.t
         if self._verbose>0:
-            print "max diff =",maxdiff
+            print("max diff =",maxdiff)
             print
         if ret_fun:
             return Spline(pts)
@@ -348,9 +348,9 @@ class WeylsLaw(object):
             else:
                 starting_value_MT = 0
             if self._verbose > 1:
-                print "starting value E =",starting_value
-                print "starting_value_MT=",starting_value_MT
-                print "T0,T=",T0,T
+                print("starting value E =",starting_value)
+                print("starting_value_MT=",starting_value_MT)
+                print("T0,T=",T0,T)
             self._MT = self._function__winding_number__use_all(T=T, T0=T0, start_value=starting_value_MT,ret_fun=True)
         else:
             self._MT = self.function__winding_number(T,h0=h0,insert_nonexisting=insert_nonexisting, use_existing=use_existing,

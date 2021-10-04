@@ -37,7 +37,7 @@ def signature_from_group(G):
     if isinstance(G,Subgroup):
         return G.signature
     if not SAGE_AVAILABLE:
-        raise ValueError,"Can not calculate signature of a sage group without sage installed!"
+        raise ValueError("Can not calculate signature of a sage group without sage installed!")
     s = dict(index=G.index(),ncusps=G.ncusps(),genus=G.genus(),
         e2=G.nu2(),e3=G.nu3())
     sig = Signature.objects.filter(**s).first()
@@ -58,11 +58,11 @@ def subgroup_to_db(G,update=True,insert=True,**kwds):
     if isinstance(G,Subgroup):
         return Subgroup.objects.filter(id=G.id)
     if not SAGE_AVAILABLE:
-        raise ValueError, "Can not convert a sage group without sage installed!"
+        raise ValueError("Can not convert a sage group without sage installed!")
     signature = signature_from_group(G)
     # Check if a subgroup
     if not hasattr(G,'as_permutation_group'):
-        raise ValueError,"Can not convert object of type {0} to Subgroup".format(type(G))
+        raise ValueError("Can not convert object of type {0} to Subgroup".format(type(G)))
     if not hasattr(G, 'permutation_action'):
         G = G.as_permutation_group()
     G.relabel()
@@ -226,10 +226,10 @@ def import_from_dict(l,index_min=1,index_max=0):
             continue        
         signatures = l[ix]
         for sig in signatures:
-            print sig
+            print(sig)
             d = l[ix][sig]
             for s,r in d['conjugates']:
-                #print s,r,s.order(),r.order()
+                #print(s,r,s.order(),r.order())
                 G = MySubgroup(s,r)
                 quotient_group = d['quotient_groups'].get((s,r),'')
                 g = psage_subgroup_to_db(G,psl_rep=True,pgl_rep=True,quotient_group=quotient_group)
@@ -249,7 +249,7 @@ def import_from_dict(l,index_min=1,index_max=0):
                     continue
                 s1,r1 = d['conjugates'][(s,r)]['pgl'][0]
                 if len(d['conjugates'][(s,r)]['pgl'])>1:
-                    print "conjugates mod pgl=",d['conjugates'][(s,r)]['pgl']
+                    print("conjugates mod pgl=",d['conjugates'][(s,r)]['pgl'])
                 if s1 != s or r1 != r:
                     G = MySubgroup(s,r)
                     g = psage_subgroup_to_db(G,psl_rep=True,pgl_rep=True)

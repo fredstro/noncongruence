@@ -13,7 +13,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-
 class Signature(db.Document):
     r"""
     Represents the signature of a subgroup G of the (projective) modular group.
@@ -42,19 +41,23 @@ class Signature(db.Document):
             {'fields': ('index','genus','e2','e3','ncusps'),'unique':True}
             ]
     }
+
     def __init__(self,**kwds):
         super(Signature,self).__init__(**kwds)
         
     def __str__(self):
         return "({index};{genus},{ncusps},{e2},{e3})".format(index=self.index,
             genus=self.genus,e2=self.e2,e3=self.e3,ncusps=self.ncusps)
+
     def __repr__(self):
         return str(self)
+
     def save(self,**kwds):
         if self.name is None:
             self.name = str(self)
         super(Signature,self).save(**kwds)
-        
+
+
 class Subgroup(db.Document):
     signature = db.ReferenceField(Signature)
     ## We also list the individual properties of the signature to be able to search more efficient.
@@ -194,6 +197,7 @@ class Subgroup(db.Document):
 
     def __repr__(self):
         return str(self)
+
     def __unicode__(self):
         if self.name != '' and not self.name is None:
             return u'{0}'.format(self.name)
@@ -202,7 +206,6 @@ class Subgroup(db.Document):
         else:
             return u'Subgroup of PSL(2,Z) with signature {0}, s(S)={1}, s(R)={2}'.format(
                 self.signature,string_of_list_to_cycles(self.permS),string_of_list_to_cycles(self.permR))
-    
         
     def coset_representatives_as_tuples(self):
         return json.loads(self.coset_representatives)
@@ -213,10 +216,13 @@ class Subgroup(db.Document):
 
     def S(self):
         return string_of_list_to_cycles(self.permS)
+
     def R(self):
         return string_of_list_to_cycles(self.permR)
+
     def T(self):
         return string_of_list_to_cycles(self.permT)
+
     def get_generalized_level(self):
         return lcm(map(lambda x: len(x),self.T()))
     
@@ -263,7 +269,7 @@ class Subgroup(db.Document):
         """
         # Check first that no one stored something malicious in our field.
         if len(filter(lambda x: x.isalpha(),self.generators)) > 0:
-            raise ValueError,'Generator field contaains letters!: self.generators'.format(self.generators)
+            raise ValueError('Generator field contaains letters!: self.generators'.format(self.generators))
         return eval(self.generators)
 
 class ConjugacyClassPSL(db.Document):

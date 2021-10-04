@@ -1,12 +1,13 @@
 from functools import reduce
+import six
 
 def string_of_list_to_cycles(s):
     r"""
     INPUT : permutation in tuple/list format:
     OUTPUT: string of cycles. 
     """
-    if not isinstance(s,basestring):
-        raise ValueError,"need a string as input!"
+    if not isinstance(s,six.text_type):
+        raise ValueError("need a string as input!")
     #l = json.loads(s)
     for x in ["(", ")","[","]"]:
         s = s.replace(x,"") 
@@ -52,11 +53,11 @@ def list_of_tuples_to_json(tuples):
     """
     ## make a sanity check first in case we call it with a list of sage Integers or something.
     if not isinstance(tuples,(list,tuple)):
-        raise ValueError,"Need a list to convert! got:{0}".format(type(tuples))
+        raise ValueError("Need a list to convert! got:{0}".format(type(tuples)))
     if len(tuples)==0:
-        raise ValueError,"Need a non-empty list!"
+        raise ValueError("Need a non-empty list!")
     if not isinstance(tuples[0],(list,tuple)):
-        raise ValueError,"Need a list of lists to convert! got:{0}".format(type(tuples))        
+        raise ValueError("Need a list of lists to convert! got:{0}".format(type(tuples)))
     if not isinstance(tuples[0][0],int):
         tuples = [map(int,m) for m in tuples]
     return json.dumps(tuples)
@@ -70,7 +71,7 @@ def mygetattr(obj,prop):
     try:
         return obj[prop]
     except:
-        raise ValueError,'object {0} does not have proprty {1}'.format(obj,prop)
+        raise ValueError('object {0} does not have proprty {1}'.format(obj,prop))
             
 def gcd(*numbers):
     """Return the greatest common divisor of the given integers"""

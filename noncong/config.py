@@ -20,9 +20,10 @@ class Config(object):
             env.init_app(app,env_file)
         except UserWarning:
             pass
+
         for key in ['APP_NAME','TESTING','PRODUCTION','ENVIRONMENT','SITE_NAME','LOG_LEVEL','DEBUG','MONGODB_URI']:
-            if not app.config.has_key(key):
-                raise ValueError,'Configuration key: {0} is missing!'.format(key)
+            if not app.config.get(key):
+                raise ValueError('Configuration key: {0} is missing!'.format(key))
         # app.config['MONGODB_SETTINGS'] = self.mongo_from_uri(app.config.get('MONGODB_URI'))
         mongo_uri = app.config.get('MONGODB_URI', 'mongodb://localhost:27017/subgroups')
         mongo_scattd_uri = app.config.get('MONGODB_SCATTD_URI', mongo_uri)

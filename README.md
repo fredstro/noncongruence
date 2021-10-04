@@ -26,18 +26,40 @@ and to interact with it you need access to the following:.
 this creates a directory 'subgroups'  and you can now:
 3. Insert all data into your local mongo database:
 > mongorestore -d subgroups data/subgroups/
+(This was created using `mongodump -d 
 
-(This was creaed using `mongodump -d 
+# Docker #
+If you can't install mongodb on your machine but have docker installed you can 
+install it and recreate the database by the following steps:
+1. follow the steps above and untar the `subgroups` directory in /tmp (otherwise change /tmp below)) 
+2. >docker pull mongo
+3. >docker run --name mongo-503 -p 27017:27017 -v /tmp:/data/ -d mongo
+4. >docker exec mongo-503 sh -c 'mongorestore -d subgroups /data/subgroups'
 
-# If you want to use python without Sage
+You will now have a running mongodb at port 27017
 
-It is generally considered best to setup and run python modules in a virtual environment
+# Use without Sage
 
-1. Instal virtualenv wrapper: https://virtualenvwrapper.readthedocs.io/
+It is generally considered best to setup and run python modules in a virtual environment of some kind.
+Which version you use depends on your preferences. You can use either of
+1. virtualenv wrapper: https://virtualenvwrapper.readthedocs.io/ 
+2. venv
+3. conda
+
+**venvwrapper**
+1. Install virtualenv wrapper: https://virtualenvwrapper.readthedocs.io/
 2. Make a virtual environment
 > mkvirtualenv noncong
 This also activates the environment.
-3. Install requirements
+
+**venv**
+1. python3 -m venv /path/to/new/virtual/environment
+2. source /path/to/new/virtual/environment/bin/activate
+
+**conda**
+1conda create -n noncong python=3
+
+After this you just need to install the requirements:
 > pip install -r requirements.txt
 
 # Access the database 
